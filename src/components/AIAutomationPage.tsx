@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface ServiceCard {
   icon: string
@@ -30,7 +30,7 @@ interface FAQItem {
   answer: string
 }
 
-// ─── Data ────────────────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const services: ServiceCard[] = [
   {
@@ -142,9 +142,20 @@ const faqs: FAQItem[] = [
   },
 ]
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+const automationAreas = [
+  'Lead Generation & CRM',
+  'Content & Social Media',
+  'Financial Reporting',
+  'Customer Support',
+  'Sales & Outreach',
+  'Workflow & Process',
+  'Other',
+]
 
-/** Single FAQ accordion item */
+const teamSizes = ['1–10', '11–50', '51–200', '200+']
+
+// ─── FAQ Accordion Item ───────────────────────────────────────────────────────
+
 function FAQAccordionItem({ item }: { item: FAQItem }) {
   const [open, setOpen] = useState(false)
 
@@ -156,9 +167,8 @@ function FAQAccordionItem({ item }: { item: FAQItem }) {
         aria-expanded={open}
       >
         <span>{item.question}</span>
-        {/* Chevron icon */}
         <svg
-          className={`w-5 h-5 text-gold transition-transform duration-300 flex-shrink-0 ml-4 ${
+          className={`w-5 h-5 text-[#f0b429] transition-transform duration-300 flex-shrink-0 ml-4 ${
             open ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -170,53 +180,307 @@ function FAQAccordionItem({ item }: { item: FAQItem }) {
         </svg>
       </button>
       {open && (
-        <div className="px-6 pb-5 text-white/70 leading-relaxed text-sm">
-          {item.answer}
-        </div>
+        <div className="px-6 pb-5 text-white/70 leading-relaxed text-sm">{item.answer}</div>
       )}
     </div>
   )
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
+// ─── Lead Capture Questionnaire ───────────────────────────────────────────────
+
+function LeadQuestionnaire() {
+  const [step, setStep] = useState(1)
+  const [submitted, setSubmitted] = useState(false)
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    company: '',
+    teamSize: '',
+    areas: [] as string[],
+    currentTools: '',
+    budget: '',
+    timeline: '',
+    message: '',
+  })
+
+  const toggleArea = (area: string) => {
+    setForm((f) => ({
+      ...f,
+      areas: f.areas.includes(area)
+        ? f.areas.filter((a) => a !== area)
+        : [...f.areas, area],
+    }))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitted(true)
+  }
+
+  if (submitted) {
+    return (
+      <div className="text-center py-16 px-6">
+        <div className="text-5xl mb-4">🎉</div>
+        <h3 className="text-2xl font-bold text-white mb-3">You're on the list!</h3>
+        <p className="text-white/60 max-w-md mx-auto">
+          Thanks <span className="text-[#f0b429] font-semibold">{form.name}</span>! We'll review
+          your details and reach out within 1 business day to schedule your free discovery call.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
+      {/* Step indicators */}
+      <div className="flex items-center justify-center gap-2 mb-10">
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="flex items-center gap-2">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                step >= s
+                  ? 'bg-[#f0b429] text-black'
+                  : 'bg-white/10 text-white/40'
+              }`}
+            >
+              {s}
+            </div>
+            {s < 3 && <div className={`w-12 h-0.5 ${step > s ? 'bg-[#f0b429]' : 'bg-white/10'}`} />}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Step 1: About You ── */}
+      {step === 1 && (
+        <div className="space-y-5">
+          <h3 className="text-xl font-bold text-white text-center mb-6">Tell us about yourself</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-white/60 text-sm mb-1.5">Full Name *</label>
+              <input
+                required
+                type="text"
+                placeholder="Jane Smith"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#f0b429]/60 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-white/60 text-sm mb-1.5">Work Email *</label>
+              <input
+                required
+                type="email"
+                placeholder="jane@company.com"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#f0b429]/60 transition-colors"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-white/60 text-sm mb-1.5">Company Name *</label>
+            <input
+              required
+              type="text"
+              placeholder="Acme Corp"
+              value={form.company}
+              onChange={(e) => setForm({ ...form, company: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#f0b429]/60 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-white/60 text-sm mb-2">Team Size *</label>
+            <div className="flex flex-wrap gap-3">
+              {teamSizes.map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => setForm({ ...form, teamSize: size })}
+                  className={`px-5 py-2 rounded-full border text-sm font-medium transition-colors ${
+                    form.teamSize === size
+                      ? 'bg-[#f0b429] border-[#f0b429] text-black'
+                      : 'border-white/20 text-white/60 hover:border-white/40'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={!form.name || !form.email || !form.company || !form.teamSize}
+            onClick={() => setStep(2)}
+            className="w-full mt-2 py-3.5 rounded-full bg-[#f0b429] text-black font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#d4a800] transition-colors"
+          >
+            Next Step →
+          </button>
+        </div>
+      )}
+
+      {/* ── Step 2: Automation Needs ── */}
+      {step === 2 && (
+        <div className="space-y-5">
+          <h3 className="text-xl font-bold text-white text-center mb-6">What do you want to automate?</h3>
+          <div>
+            <label className="block text-white/60 text-sm mb-3">
+              Select all areas of interest *
+            </label>
+            <div className="flex flex-wrap gap-3">
+              {automationAreas.map((area) => (
+                <button
+                  key={area}
+                  type="button"
+                  onClick={() => toggleArea(area)}
+                  className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                    form.areas.includes(area)
+                      ? 'bg-[#f0b429] border-[#f0b429] text-black'
+                      : 'border-white/20 text-white/60 hover:border-white/40'
+                  }`}
+                >
+                  {area}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-white/60 text-sm mb-1.5">
+              What tools do you currently use?
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. HubSpot, Notion, Slack, Zapier..."
+              value={form.currentTools}
+              onChange={(e) => setForm({ ...form, currentTools: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#f0b429]/60 transition-colors"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="w-1/3 py-3.5 rounded-full border border-white/20 text-white/60 text-sm font-semibold hover:bg-white/5 transition-colors"
+            >
+              ← Back
+            </button>
+            <button
+              type="button"
+              disabled={form.areas.length === 0}
+              onClick={() => setStep(3)}
+              className="w-2/3 py-3.5 rounded-full bg-[#f0b429] text-black font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#d4a800] transition-colors"
+            >
+              Next Step →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Step 3: Budget & Message ── */}
+      {step === 3 && (
+        <div className="space-y-5">
+          <h3 className="text-xl font-bold text-white text-center mb-6">Almost done!</h3>
+          <div>
+            <label className="block text-white/60 text-sm mb-2">Monthly budget range</label>
+            <div className="flex flex-wrap gap-3">
+              {['< $1k', '$1k–$3k', '$3k–$10k', '$10k+', 'Not sure yet'].map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  onClick={() => setForm({ ...form, budget: b })}
+                  className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                    form.budget === b
+                      ? 'bg-[#f0b429] border-[#f0b429] text-black'
+                      : 'border-white/20 text-white/60 hover:border-white/40'
+                  }`}
+                >
+                  {b}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-white/60 text-sm mb-2">Desired timeline</label>
+            <div className="flex flex-wrap gap-3">
+              {['ASAP', 'Within 1 month', '1–3 months', 'Just exploring'].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setForm({ ...form, timeline: t })}
+                  className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                    form.timeline === t
+                      ? 'bg-[#f0b429] border-[#f0b429] text-black'
+                      : 'border-white/20 text-white/60 hover:border-white/40'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-white/60 text-sm mb-1.5">
+              Anything else we should know?
+            </label>
+            <textarea
+              rows={4}
+              placeholder="Describe your biggest pain point or what you'd like to automate first..."
+              value={form.message}
+              onChange={(e) => setForm({ ...form, message: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#f0b429]/60 transition-colors resize-none"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              className="w-1/3 py-3.5 rounded-full border border-white/20 text-white/60 text-sm font-semibold hover:bg-white/5 transition-colors"
+            >
+              ← Back
+            </button>
+            <button
+              type="submit"
+              className="w-2/3 py-3.5 rounded-full bg-[#f0b429] text-black font-bold text-sm hover:bg-[#d4a800] transition-colors"
+            >
+              Book My Free Call 🚀
+            </button>
+          </div>
+        </div>
+      )}
+    </form>
+  )
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function AIAutomationPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans">
 
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-6 py-28 md:py-40 text-center">
-        {/* Decorative radial glow */}
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"
           aria-hidden="true"
         >
-          <div className="w-[700px] h-[700px] rounded-full bg-gold/10 blur-[120px] opacity-40" />
+          <div className="w-[700px] h-[700px] rounded-full bg-[#f0b429]/10 blur-[120px] opacity-40" />
         </div>
-
         <div className="relative z-10 max-w-4xl mx-auto">
-          {/* Tag */}
-          <span className="inline-block mb-6 px-4 py-1.5 rounded-full border border-gold/40 text-gold text-sm font-medium tracking-wide">
+          <span className="inline-block mb-6 px-4 py-1.5 rounded-full border border-[#f0b429]/40 text-[#f0b429] text-sm font-medium tracking-wide">
             AI Automation Services
           </span>
-
-          {/* Headline */}
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
             Automate. Optimise.{' '}
-            <span className="text-gold">Scale.</span>
+            <span className="text-[#f0b429]">Scale.</span>
           </h1>
-
-          {/* Sub-headline */}
           <p className="text-white/70 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
             We implement intelligent AI workflows that reduce manual effort, cut costs,
             and accelerate growth for SMEs and enterprises.
           </p>
-
-          {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="#contact"
-              className="px-8 py-3.5 rounded-full bg-gold text-black font-semibold text-sm hover:bg-gold-dark transition-colors"
+              href="#questionnaire"
+              className="px-8 py-3.5 rounded-full bg-[#f0b429] text-black font-semibold text-sm hover:bg-[#d4a800] transition-colors"
             >
               Get Started
             </a>
@@ -230,21 +494,20 @@ export default function AIAutomationPage() {
         </div>
       </section>
 
-      {/* ── SERVICES GRID ────────────────────────────────────────────────── */}
+      {/* ── SERVICES GRID ─────────────────────────────────────────────────── */}
       <section className="px-6 py-20 max-w-7xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-          What We <span className="text-gold">Automate</span>
+          What We <span className="text-[#f0b429]">Automate</span>
         </h2>
         <p className="text-white/60 text-center mb-14 max-w-xl mx-auto">
           From lead gen to financial reporting — we build custom AI solutions for every
           part of your business.
         </p>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service) => (
             <div
               key={service.title}
-              className="bg-white/5 border border-white/10 rounded-2xl p-7 hover:border-gold/40 hover:bg-white/[0.07] transition-all"
+              className="bg-white/5 border border-white/10 rounded-2xl p-7 hover:border-[#f0b429]/40 hover:bg-white/[0.07] transition-all"
             >
               <span className="text-3xl mb-4 block">{service.icon}</span>
               <h3 className="text-lg font-bold mb-2">{service.title}</h3>
@@ -254,23 +517,22 @@ export default function AIAutomationPage() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
+      {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
       <section id="how-it-works" className="px-6 py-20 bg-white/[0.03]">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            How It <span className="text-gold">Works</span>
+            How It <span className="text-[#f0b429]">Works</span>
           </h2>
           <p className="text-white/60 text-center mb-14 max-w-xl mx-auto">
             A simple, proven three-step process from discovery to live automation.
           </p>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step) => (
               <div
                 key={step.number}
                 className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center"
               >
-                <span className="inline-block text-4xl font-extrabold text-gold/30 mb-4">
+                <span className="inline-block text-4xl font-extrabold text-[#f0b429]/30 mb-4">
                   {step.number}
                 </span>
                 <h3 className="text-xl font-bold mb-3">{step.title}</h3>
@@ -281,35 +543,31 @@ export default function AIAutomationPage() {
         </div>
       </section>
 
-      {/* ── STATS BAR ────────────────────────────────────────────────────── */}
+      {/* ── STATS BAR ─────────────────────────────────────────────────────── */}
       <section className="px-6 py-16 border-y border-white/10">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
           {stats.map((stat) => (
             <div key={stat.label}>
-              <p className="text-4xl md:text-5xl font-extrabold text-gold">{stat.value}</p>
+              <p className="text-4xl md:text-5xl font-extrabold text-[#f0b429]">{stat.value}</p>
               <p className="text-white/60 text-sm mt-2">{stat.label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ─────────────────────────────────────────────────── */}
+      {/* ── TESTIMONIALS ──────────────────────────────────────────────────── */}
       <section className="px-6 py-20 max-w-5xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-14">
-          What Our <span className="text-gold">Clients Say</span>
+          What Our <span className="text-[#f0b429]">Clients Say</span>
         </h2>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {testimonials.map((t) => (
             <div
               key={t.name}
               className="bg-white/5 border border-white/10 rounded-2xl p-8"
             >
-              {/* Quote mark */}
-              <span className="text-gold text-5xl font-serif leading-none">"</span>
-              <p className="text-white/80 text-base leading-relaxed mt-2 mb-6">
-                {t.quote}
-              </p>
+              <span className="text-[#f0b429] text-5xl font-serif leading-none">"</span>
+              <p className="text-white/80 text-base leading-relaxed mt-2 mb-6">{t.quote}</p>
               <div>
                 <p className="font-bold text-white">{t.name}</p>
                 <p className="text-white/50 text-sm">{t.role}</p>
@@ -319,13 +577,12 @@ export default function AIAutomationPage() {
         </div>
       </section>
 
-      {/* ── FAQ ────────────────────��─────────────────────────────────────── */}
+      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
       <section className="px-6 py-20 bg-white/[0.03]">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-14">
-            Frequently Asked <span className="text-gold">Questions</span>
+            Frequently Asked <span className="text-[#f0b429]">Questions</span>
           </h2>
-
           <div className="flex flex-col gap-4">
             {faqs.map((item) => (
               <FAQAccordionItem key={item.question} item={item} />
@@ -334,31 +591,46 @@ export default function AIAutomationPage() {
         </div>
       </section>
 
-      {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
-      <section id="contact" className="px-6 py-28 text-center relative overflow-hidden">
-        {/* Decorative glow */}
+      {/* ── QUESTIONNAIRE ─────────────────────────────────────────────────── */}
+      <section id="questionnaire" className="px-6 py-24 relative overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center"
           aria-hidden="true"
         >
-          <div className="w-[500px] h-[500px] rounded-full bg-gold/10 blur-[100px] opacity-30" />
+          <div className="w-[600px] h-[600px] rounded-full bg-[#f0b429]/5 blur-[100px]" />
         </div>
-
         <div className="relative z-10 max-w-2xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-extrabold mb-6 leading-tight">
-            Ready to{' '}
-            <span className="text-gold">automate</span> your business?
-          </h2>
-          <p className="text-white/60 text-lg mb-10">
-            Book a free discovery call and find out how much time and money you could save.
-          </p>
-          <a
-            href="mailto:hello@financebeef.com"
-            className="inline-block px-10 py-4 rounded-full bg-gold text-black font-bold text-base hover:bg-gold-dark transition-colors"
-          >
-            Book a Free Call
-          </a>
+          <div className="text-center mb-10">
+            <span className="inline-block mb-4 px-4 py-1.5 rounded-full border border-[#f0b429]/40 text-[#f0b429] text-sm font-medium">
+              Free Discovery Call
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
+              Tell us about your <span className="text-[#f0b429]">automation needs</span>
+            </h2>
+            <p className="text-white/60">
+              Takes 2 minutes. We'll review your answers and reach out within 1 business day.
+            </p>
+          </div>
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-10">
+            <LeadQuestionnaire />
+          </div>
         </div>
+      </section>
+
+      {/* ── FINAL CTA ─────────────────────────────────────────────────────── */}
+      <section className="px-6 py-20 text-center border-t border-white/10">
+        <h2 className="text-3xl md:text-4xl font-extrabold mb-4 leading-tight">
+          Ready to <span className="text-[#f0b429]">automate</span> your business?
+        </h2>
+        <p className="text-white/60 text-lg mb-8 max-w-xl mx-auto">
+          Join companies already saving 80% of their manual work with FinanceBeef AI automation.
+        </p>
+        <a
+          href="#questionnaire"
+          className="inline-block px-10 py-4 rounded-full bg-[#f0b429] text-black font-bold text-base hover:bg-[#d4a800] transition-colors"
+        >
+          Book a Free Call
+        </a>
       </section>
 
     </div>
